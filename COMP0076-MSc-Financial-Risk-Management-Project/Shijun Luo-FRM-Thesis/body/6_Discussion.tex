@@ -1,0 +1,36 @@
+\chapter{Discussion and Conclusion} \label{Chap6}
+\section{Interpretation of Results}
+\subsection{Comparable Performance}
+The KM and NA estimators demonstrated comparable performance across various metrics, including C-Index, HR, HRG, and AMG. Their stability and consistency were evident across different sectors, highlighting their reliability in real-world financial scenarios.
+
+\subsection{Nuanced Differences}
+While both estimators exhibited parallel performance, subtle differences were observed in specific sectors. These nuances, although minor, could influence decision-making processes, especially in sectors where one estimator outperformed the other.
+
+\subsection{Robustness}
+The models' robustness and stability were reaffirmed through rigorous analysis. Their consistent performance across diverse sectors underscored their applicability in practical financial applications.
+
+\subsection{Conclusion}
+In conclusion, the KM and NA estimators offer reliable predictive capabilities in the financial domain. Their near-identical performance across various metrics emphasizes their suitability for a wide range of applications. However, it is essential for financial practitioners to consider sector-specific nuances when choosing between these estimators. This study provides valuable insights for both researchers and practitioners, contributing to the ongoing advancements in survival analysis in the financial context.
+
+\section{Limitations and Future Research}
+However, my work is not without limitations. One significant drawback lies in the C-ndex, a performance metric where monotonically increasing values are destined to receive higher scores (see Table \ref{tab:concordance-index}). This limitation stems from the index's design, which favors higher predictions. Consequently, this characteristic leads to outcomes clustering closely around 1, reducing the index's discriminatory power.
+
+Moreover, the significant role of the low hit rate throughout the dataset becomes apparent when considering the striking resemblance between the Kaplan-Meier (KM) and Nelson-Aalen (NA) estimators. In scenarios where $x$ approaches infinitesimal values from both sides, the equation
+\[
+    \lim_{x \to 0} x = \lim_{x \to 0} \ln(1+x) 
+\]
+comes into play. This can be proved by Taylor expansion or definition of derivative.
+
+Replacing $x$ with $-\frac{m_i}{n_i}$ in \ref{eq:km_sf} and \ref{eq:na_sf}, the following limits are obtained:
+
+\begin{align*}
+    \lim_{\forall i, \frac{m_i}{n_i} \to 0}\widehat {S^{\text{KM}}}(t) &= \lim_{\forall i, \frac{m_i}{n_i} \to 0} \prod_{i|t_{(i)} \leqslant t} \left(1 - \frac{m_i}{n_i}\right)\\
+    &= \lim_{\forall i, \frac{m_i}{n_i} \to 0}\exp \sum_{i|t_{(i)} \leqslant t} \ln \left(1 - \frac{m_i}{n_i}\right)\\
+    &= \lim_{\forall i, \frac{m_i}{n_i} \to 0}\exp \sum_{i|t_{(i)} \leqslant t} \left(- \frac{m_i}{n_i}\right)\\
+    &= \lim_{\forall i, \frac{m_i}{n_i} \to 0}\exp {\left(-\sum_{i|t_{(i)} \leqslant t} \frac{m_i}{n_i}\right)}\\
+    &= \lim_{\forall i, \frac{m_i}{n_i} \to 0}\widehat {S^{\text{NA}}}(t).
+\end{align*}
+
+This convergence phenomenon results the survival function of both estimators displaying remarkable overall and sector-specific similarities, underlining the influence of this mathematical behavior on their performance.
+
+In future research, it would be valuable to explore datasets with fewer censored cases. Ideally, these cases should not be too close to zero, as proximity to zero renders the differences between the Kaplan-Meier (KM) and Nelson-Aalen (NA) estimators almost imperceptible. By working with datasets exhibiting a broader range of censored values, a more nuanced analysis can be conducted, allowing for a detailed examination of the estimators' performance under varying conditions.

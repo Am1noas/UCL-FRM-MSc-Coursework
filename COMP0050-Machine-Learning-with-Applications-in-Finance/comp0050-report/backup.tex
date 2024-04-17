@@ -1,0 +1,14 @@
+\begin{align*}
+    P\left(y^{(i)}&=1 \mid x^{(i)} ; \beta\right)=\frac{1}{1+e^{-\beta_0-\sum_{j=1}^p \beta_j x_j^{(i)}}} \\
+    P\left(y^{(i)}&=1 \mid x^{(i)} ; \beta\right)=\frac{1}{1+e^{-\beta_0-\sum_{j=1}^p \beta_j x_j^{(i)}}} \equiv  F\left(\beta_0+\sum_{j=1}^p \beta_j x_j^{(i)}\right) \\
+    p_i \equiv P\left(y^{(i)}&=1 \mid x^{(i)} ; \beta\right)=F\left(\beta_0+\sum_{j=1}^p \beta_j x_j^{(i)}\right) \\
+    L(\beta)&=P\left(y^{(i)} \mid x^{(i)} ; \beta\right)=\prod_{i=1}^N p_i^{y^{(i)}}\left(1-p_i\right)^{1-y^{(i)}}
+\end{align*}
+
+Since I want to determine the hyperplanes, I have to solve $\beta$ by minimizing the cost function. The cost function is the log-likelihood of the training data, and use gradient descent to solve the $\beta$ who can reach the maximum likelihood.
+
+\begin{align*}
+    L(\beta) &= \log L(\beta) = \sum_{i=1}^N y^{(i)} \log p_i+\left(1-y^{(i)\right) \log \left(1-p_i\right) \\
+    \frac{\partial L(\beta)}{\partial \beta_k}&=\sum_{i=1}^N x_k^{(i)}\left(y{(i)}-F\left(\beta_0+\sum_{j=1}^N \beta_j x_j^{(i)}\right)\right) \\
+    \beta_k&=\beta_k+\alpha \sum_{i=1}^N x_k^{(i)}\left(y^{(i)}-F\left(\beta_+\sum_{j=1}^N \beta_j x_j^{(i)}\right)\right)
+\end{align*}

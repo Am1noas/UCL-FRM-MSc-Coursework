@@ -1,0 +1,21 @@
+% You can use the appendices to include additional items, such as code listings, which are not vital to understand your work but may be of interest to the reader.
+\begin{appendices}
+    \chapter{Title of first appendix}
+    \section{Code listing}
+    If you wish to list code in your appendices, one way is to use the ``verbatim" environment.
+    
+    \begin{verbatim}
+    % Left hand side plot
+    figure
+    plot(1:10,(1:10).^2,'--',1:10,((1:10).^2)/2,'-.','Linewidth',1)
+    xlabel('x')
+    ylabel('f(x)')
+    % Right hand side plot
+    figure
+    plot(0:0.1:10,sin(0:0.1:10),'--',0:0.1:10,cos(0:0.1:10),'-.','Linewidth',1)
+    xlabel('x')
+    label('f(x)')
+    \end{verbatim}
+    
+\end{appendices}
+

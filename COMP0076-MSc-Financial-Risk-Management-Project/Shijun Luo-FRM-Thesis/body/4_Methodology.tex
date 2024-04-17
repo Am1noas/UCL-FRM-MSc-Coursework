@@ -1,0 +1,333 @@
+\chapter{Empirical Methodology} \label{Chap4}
+In this chapter, I delve into the methodology used for analyzing euro bonds quotes in the EMEA market. The empirical approach involves the application of survival analysis models to estimate probabilities and backtesting strategies to validate the results, providing a comprehensive methodology for the subsequent analysis and interpretation of the research findings.
+
+\section{Model Setup}
+\subsection{Introduction to Survival Analysis Models}
+Survival analysis is a statistical methodology used to analyze the time until an event of interest occurs. Unlike traditional statistical methods, survival analysis is particularly powerful when dealing with censored data, where the exact event occurrence time is unknown or incomplete. This technique is extensively applied in various fields, including medical research, engineering, and finance, due to its ability to handle these incomplete observations effectively.
+
+The strength of survival analysis lies in its unique approach to handling censored data points. Censored data often arise in real-world scenarios, where the event of interest might not occur during the observation period, leading to incomplete data. Survival analysis models can effectively incorporate these censored data points into the analysis, providing a comprehensive understanding of the event occurrence probabilities over time.
+
+\subsection{Survival Analysis in Finance}
+In the financial domain, survival analysis finds significant relevance due to its adaptability to handle uncertain events and incomplete information. Market dynamics often involve ambiguous outcomes, such as trades that may or may not be executed at a specific price. Survival analysis models, like the Kaplan-Meier estimator and the Nelson-Aalen estimator, excel in these situations, allowing for accurate estimation of probabilities despite incomplete data.
+
+In my financial problem, determining the exact price of euro bonds quotes can be challenging. When buying, if the trade is successful, the price is known; however, if the trade fails, I only know the lower bound of the price (right-censored data). Similarly, when selling, if the trade is successful, the price is known, but if the trade fails, I only know the upper bound of the price (left-censored data). Survival analysis is ideal for financial problems because market makers frequently experience failed trades, leading to a significant proportion of censored data. Analyzing these figures reveals the prevalence of censored data in my dataset, emphasizing the relevance of survival analysis models in this financial context.
+
+In my study, I leverage survival analysis techniques to model euro bonds quotes executions, where the event of interest is the successful execution of trades. Censored data points, representing trades that did not execute within the observation period, are seamlessly integrated into my analysis. By employing estimators like KM and NA, I can derive insightful patterns and probabilities, enabling a deeper understanding of euro bonds quotes executions.
+
+\subsection{Problem Statement}
+
+\begin{table}[H]
+    \caption{Comparison between Survival Analysis in Financial Industry and Traditional Problems.}
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Aspect} & \textbf{Financial Industry} & \textbf{Traditional Problem} \\ \hline
+    \textbf{Problem} & RFQ Execution & Patients Remission \\ \hline
+    \textbf{Variable} & Price to RFQ Execution & Time Until Death \\ \hline
+    \textbf{Event} & Trade Execution & Death \\ \hline
+    \textbf{Censor Case} & Trade Failure & Being Alive \\ \hline
+    \textbf{Reason for Censor} & 
+    \begin{tabular}[c]{@{}l@{}}
+        \textit{TRADE\_TRADEDAWAY},\\
+        \textit{TRADE\_DONE},\\ \textit{TRADE\_COVERED},\\
+        \textit{TRADE\_COVEREDTIED},\\
+        \textit{TRADE\_TIEDTRADEDAWAY}
+    \end{tabular} & 
+    \begin{tabular}[c]{@{}l@{}}
+        Patient Withdraw,\\
+        Study End,\\
+        Lost to Follow-Up
+    \end{tabular} \\ \hline
+    \textbf{Outcome} & 
+        \multicolumn{2}{c|}{
+            \begin{tabular}[c]{@{}l@{}}
+            Survival Function, \\
+            Hazard Function, \\
+            Cumulative Distribution Function, \\
+            Probability Mass Function
+            \end{tabular}
+        } \\ \hline
+    \textbf{Estimator} & \multicolumn{2}{c|}{
+        \begin{tabular}[c]{@{}l@{}}
+            Kaplan-Meier Estimator, \\
+            Nelson-Aalen Estimator
+            \end{tabular}
+        } \\ \hline
+    \end{tabular}
+\end{table}
+
+In the realm of survival analysis, the financial industry presents unique challenges and differences compared to traditional problems. I use a study that follows patients with disease in remission to see how long they stay in remission as a comparison for traditional survival analysis problems. 
+
+In the financial industry, the outcome variable focuses on the price until an RFQ (Request for Quote) is executed, contrasting with traditional problems where the focus is on the time until an event occurs, i.e. a patient's death. The event of interest in financial survival analysis is the successful execution of an RFQ compared to the event of death in traditional problems.
+
+Censoring cases in financial survival analysis occur when an RFQ is not executed, and reasons for censoring include various trade outcomes such as \textit{TRADE\_TRADEDAWAY}, \textit{TRADE\_DONE}, \textit{TRADE\_COVERED}, \textit{TRADE\_COVEREDTIED}, and \textit{TRADE\_TIEDTRADEDAWAY}. In contrast, traditional problems involve censoring when a patient is still alive, withdrawn from the study, or lost to follow-up.
+
+Despite these differences, both domains share commonalities. The outcomes of interest in both cases include measures such as survival function (SF), hazard function (HF), cumulative distribution function (CDF), probability mass function(PMF). Estimators like the Kaplan-Meier estimator (KM) and the Nelson-Aalen estimator (NA) are employed in both contexts to analyze and interpret the respective survival data effectively.
+
+\section{Cross-Validation}
+\subsection{Introduction to Cross-Validation}
+Cross-validation is a statistical technique used to assess the performance and generalizability of a predictive model. It is particularly crucial in situations where the available data is limited and needs to be maximally utilized. In the context of my research, cross-validation allows me to evaluate how well my survival analysis models, such as the Kaplan-Meier and Nelson-Aalen estimators, perform on unseen data. By dividing my dataset into subsets (folds), training the model on a subset, and validating it on another, cross-validation helps estimate how well the model will generalize to an independent dataset. In my study, employing cross-validation ensures that my models are robust and reliable, especially when predicting the success of RFQs over time.
+
+\subsection{Cross-Validation in Finance}
+Time Series Split is a specific type of cross-validation used when the data exhibits a temporal sequence. Unlike random shuffling in traditional cross-validation, time series split maintains the chronological order of the data. Each fold is a superset of all previous folds, guaranteeing that past data does not leak into the future, making it suitable for my financial time series data. In my research, where I'm dealing with RFQs spanning specific time intervals, time series split ensures that the patterns captured by my models are realistic and relevant to the actual market dynamics. It aligns well with the nature of my data, allowing me to make accurate predictions regarding RFQ trade outcomes.
+
+The primary goal is to determine the optimal $k$-fold cross-validation strategy, where each fold represents approximately one week of Requests for Quotes (RFQs) data. To achieve this, I defined a metric called Residual Sum of Squares (RSS). RSS($k$) quantifies the discrepancy between the time gaps in the dataset and a reference value of 7 (representing one week). The objective is to find the value of $k$ that minimizes RSS($k$), indicating the best-suited $k$-fold cross-validation setup tailored to the weekly patterns observed in the RFQs data. This approach ensures that the cross-validation strategy aligns closely with the inherent time-based structure of the dataset.
+
+\subsection{Problem Statement}
+Assume a tagged equally partition of the whole time series interval [0, n] on the real line is a finite sequence
+\[
+    l_i = i \lfloor \frac{n}{k}\rfloor , \forall i = 0, \cdots, k-1, l_k = n
+\]
+
+The Residual Sum of Squares (RSS) of the $k$-fold is given by
+\begin{equation}
+    \mathrm{RSS}(k) = \sum_{i=1}^{k} \left( |l_i - l_{i-1}| - 7 \right)^2, k \in \mathbb{N}.\label{eq:rss}
+\end{equation}
+
+Then this problem turns to find best $k_0 = \mathrm{arg\,min}_k \mathrm{RSS(k)}, k \in \mathbb{N}$ from \eqref{eq:rss}.
+
+\section{Model Estimation}
+The survival analysis models are applied to the dataset to estimate the probabilities of euro bonds quotes executions at different time splits. The estimation process includes handling censored data and considering the time-price relationship, ensuring accurate and nuanced predictions.
+
+\subsection{Theoretical Variable Definition}
+Here, I present fundamental definitions of survival analysis variables relevant to my research question. These definitions are model-independent, providing a general understanding of the survival analysis problem.
+
+I opted not to use Python's lifeline package for survival analysis due to the low version of its jpm module, which hindered effective backtesting. Consequently, I chose to implement the analysis manually.
+
+\begin{description}
+    \item[Price List $\{t_i\}, i = 1, \cdots, n.$] This is the price list in train set. Some prices are censored, some are not.
+    
+    \item[Ordered Trade Done Price $\{t_{(i)}\}, i = 0, \cdots, k + 1.$ ] This is the trade done price sequence sorted by monotonically increasing, with $t_{(0)} = -\infty, t_{(k+1)} = +\infty$. $k$ is the total number of unique trade done prices.
+    
+    \item[\# of Trade Done Price$\{m_i\}$] $m_i := \sum_{j = 1}^{n} \mathds{1}(t_{(i)} = t_j) \mathds{1}(c_j = 1) $ represents the number of RFQs that are executed at price $t_{(i)}$. % \#td[i]
+    
+    \item[\# of Not Trade Done Price$\{q_i\}$] $q_i := \sum_{j = 1}^{n} \mathds{1}(t_{(i)} \leqslant t_j < t_{(i + 1)}) \mathds{1}(c_j = 0)$ represents the number of RFQs that are not executed at price $t_{(i)}$. % \#ntd[i]
+    
+    \item[\# of At Risk Price$\{n_i\}$] $n_i:= \sum_{j = 1}^{n} \mathds{1}(t_{(i)} \leqslant t_j)  $ represents the total number of RFQs at risk (not yet executed) at price $t_{(i)}$. % \#at_risk[i]
+    
+    \item[Survival Function (SF)] The survivor function $S(t) = P(T > t)$ gives the probability that a quote would be executed higher than some specified price $t$.
+    
+    \item[Hazard Function (HF)] The hazard function $h(t)$ gives the instantaneous potential per unit price for the trade to execute, given that the individual has trade done up to price $t$:
+    \[
+        h(t) = \lim_{\Delta t \to 0} \frac{P(t \leqslant T < t + \Delta t| T \geqslant t)}{\Delta t}.
+    \]
+
+    \item[Cumulative Distribution Function (CDF)] The Cumulative Distribution Function 
+    \begin{equation}
+        F(t) = P(T \leqslant t) = 1 - S(t)\label{eq:cdf}
+    \end{equation}
+    at a specific price $t$ represents the probability that a quote will be executed at a price less than or equal to $t$, where $S(t)$ is the Survivor Function. $F(t)$ gives the probability that the trade will occur at or below the specified price $t$.
+    
+    \item[Probability Mass Function (PMF)] The Probability Mass Function
+    \begin{equation}
+        f(t) = P(T = t) = \frac{\text{d}F(t)}{\text{d}t}\label{eq:pmf}
+    \end{equation}
+    at a specific price $t$ represents the probability that a quote will be executed exactly at price $t$. It is different from probability density function of continuous variables, as the probability of a continuous variable taking on an exact value is zero. $f(t)$ is applicable in scenarios where time is measured in discrete intervals.
+\end{description}
+
+The relationship between the survival function and hazard function is
+\begin{align}
+    S(t)&= \exp{\left(-\int_{0}^{t}h(u)\text{d}u\right)},\label{eq:h_s}\\
+    h(t)&= -\frac{\text{d}S(t)/\text{d}t}{S(t)}.\label{eq:s_h}
+\end{align}
+
+\subsection{Kaplan-Meier Estimator (KM)}
+The Kaplan-Meier Estimator is a non-parametric method used in the financial industry to estimate the probability of RFQ (Request for Quote) trade executions at different price points. The survival function $S(t)$ at price $t$ represents the probability that an RFQ will be executed at a price greater than or equal to $t$.
+
+\subsubsection{Estimator Definition}
+The Kaplan-Meier Estimator of the survival function $S(t)$ is given by:
+\begin{align}
+    \widehat {S^{\text{KM}}}(t) &= \prod_{i|t_{(i)} \leqslant t} \hat P(t > t_{(i)} | t \geqslant t_{(i)}) \notag\\
+    &= \prod_{i|t_{(i)} \leqslant t} \frac{\hat P(t > t_{(i)})}{\hat P(t \geqslant t_{(i)})} \notag\\
+    &= \prod_{i|t_{(i)} \leqslant t} \left(1 - \frac{\hat P(t = t_{(i)})}{\hat P(t \geqslant t_{(i)})}\right)\notag\\
+    &= \prod_{i|t_{(i)} \leqslant t} \left(1 - \frac{m_i}{n_i}\right).\label{eq:km_sf}
+\end{align}
+
+In \eqref{eq:km_sf}, I placed the name of the estimator, KM, above the power instead of using a subscript because I intend to reserve the subscript for representing other variables later on. Utilizing a superscript for the estimator's name and incorporating the symbol $\hat ~$ to denote the estimated value is a convention that aligns with standard notation practices.
+
+\subsubsection{Estimator Algorithm}
+The algorithm of Kaplan-Meier Estimator is presented as follows:
+
+\begin{algorithm}[H]
+    \KwIn{List of RFQs from train set with corresponding censored status(sorted by time): \[ \{(t_1, c_1), (t_2, c_2), \ldots, (t_n, c_n)\} \]}
+    \KwOut{Execution probabilities at each price point: \[ \{E^{\text{KM}}(t_{(1)}), E^{\text{KM}}(t_{(2)}), \ldots, E^{\text{KM}}(t_{(k)})\}\]}
+    Sort the list of unique executed RFQs of length $k$ by their price in ascending order, adding $t_{(0)} = -\infty$ and $t_{(k+1)} = +\infty$ at the beginning and end respectively\;
+    \For{\(i \gets 1\) \KwTo $k$}{
+        Compute \# of trade done price $m_i$\;
+        Compute \# of not trade done price $q_i$\;
+        Compute \# of at risk price $n_i$\;
+        Compute Survival Function $\widehat {S^{\text{KM}}}(t_{(i)}) = \prod_{j=1}^{i}(1 - \frac{m_i}{n_i})$ using \eqref{eq:km_sf} \;
+        Compute Cumulative Distribution Function $\widehat {F^{\text{KM}}}(t_{(i)}) = P(T \leqslant t) = 1 - \widehat {S^{\text{KM}}}(t_{(i)})$ using \eqref{eq:cdf} \;
+        Compute Probability Mass Function $\widehat {f^{\text{KM}}}(t_{(i)}) = P(T = t) = \Delta \widehat {F^{\text{KM}}}(t_{(i)}) = \widehat {F^{\text{KM}}}(t_{(i)}) - \widehat {F^{\text{KM}}}(t_{(i - 1)})$ using \eqref{eq:pmf} \;
+        Build Kaplan-Meier Estimator $\widehat {S^{\text{KM}}}(t_{(i)})$ at $\{t_{(i)}\}$ using \eqref{eq:km_sf}\;
+    }
+\caption{Kaplan-Meier Estimator Algorithm}
+\end{algorithm}
+
+The Kaplan-Meier Estimator provides a step-function survival curve that estimates the probability of quotes executions over time, considering both censored and uncensored data points. Using their value at discrete price $\{t_i\}, i = 1, \cdots, n$, we can get the Kaplan-Meier Estimator function
+\[
+    \widehat {S^{\text{KM}}}(s) = \widehat {S^{\text{KM}}}(t_{(i)}), i = \mathrm{arg\,max}_j t_{(j)}\leqslant s, \forall s \in \mathbb{R}
+\]
+which is aligned with \eqref{eq:km_sf}.
+
+\subsection{Nelson-Aalen Estimator (NA)}
+The Nelson-Aalen Estimator is another crucial survival analysis tool used in my model setup. Unlike the Kaplan-Meier estimator, the Nelson-Aalen estimator focuses on estimating the cumulative hazard function. It allows us to understand the evolving risk associated with euro bonds quotes executions over time. By analyzing the cumulative hazard function, I gain deeper insights into the temporal patterns and trends in quote executions. This information is essential for developing effective trading strategies and making informed decisions in the euro bonds market.
+
+\subsubsection{Estimator Definition}
+The Nelson-Aalen Estimator of the hazard function $h(t)$ is given by:
+\begin{align}
+    i &= \mathrm{arg\,max}_j t_{(j)}\leqslant t, \notag\\
+    \widehat {h^{\text{NA}}}(t) &= \hat P(t = t_{(i)} | t \geqslant t_{(i)})\notag\\
+    &= \frac{m_i}{n_i}.\label{eq:na_hf}
+\end{align}
+
+Then get $S(t)$ use \eqref{eq:h_s}:
+\begin{align}
+    \widehat {S^{\text{NA}}}(t) &= \exp{\left(-\int_{0}^{t}\widehat {h^{\text{NA}}}(u)\text{d}u\right)}\notag\\
+    &= \exp{\left(-\sum_{i|t_{(i)} \leqslant t} \frac{m_i}{n_i}\right)}.\label{eq:na_sf}
+\end{align}
+
+\subsubsection{Estimator Algorithm}
+The algorithm of Nelson-Aalen Estimator is presented as follows:
+
+\begin{algorithm}[h]
+    \KwIn{List of RFQs from train set with corresponding censored status(sorted by time): \[ \{(t_1, c_1), (t_2, c_2), \ldots, (t_n, c_n)\} \]}
+    \KwOut{Execution probabilities at each price point: \[ \{E^{\text{NA}}(t_{(1)}), E^{\text{NA}}(t_{(2)}), \ldots, E^{\text{NA}}(t_{(k)})\}\]}
+    Sort the list of unique executed RFQs of length $k$ by their price in ascending order, adding $t_{(0)} = -\infty$ and $t_{(k+1)} = +\infty$ at the beginning and end respectively\;
+    \For{\(i \gets 1\) \KwTo $k$}{
+        Compute \# of trade done price $m_i$\;
+        Compute \# of not trade done price $q_i$\;
+        Compute \# of at risk price $n_i$\;
+        Compute Hazard Function $\widehat {h^{\text{NA}}}(t_{(i)}) = \frac{m_i}{n_i}$ using \eqref{eq:na_hf} \;
+        Compute Survival Function $\widehat {S^{\text{NA}}}(t_{(i)}) = \sum_{i|t_{(i)} \leqslant t} \frac{m_i}{n_i}$ using \eqref{eq:na_sf} \;
+        Compute Cumulative Distribution Function $\widehat {F^{\text{NA}}}(t_{(i)}) = P(T \leqslant t) = 1 - \widehat {S^{\text{NA}}}(t_{(i)})$ using \eqref{eq:cdf} \;
+        Compute Probability Mass Function $\widehat {f^{\text{NA}}}(t_{(i)}) = P(T = t) = \Delta \widehat {F^{\text{NA}}}(t_{(i)}) = \widehat {F^{\text{NA}}}(t_{(i)}) - \widehat {F^{\text{NA}}}(t_{(i - 1)})$ using \eqref{eq:pmf} \;
+        Build Nelson-Aalen Estimator $\widehat {S^{\text{NA}}}(t_{(i)})$ at $\{t_{(i)}\}$ using \eqref{eq:na_sf}\;
+    }
+\caption{Nelson-Aalen Estimator Algorithm}
+\end{algorithm}
+
+The Nelson-Aalen estimator provides a step-function cumulative hazard function curve that estimates the probability of quotes executions at a specific time, considering both censored and uncensored data points. Using their value at discrete price $\{t_i\}, i = 1, \cdots, n$, we can get the Nelson-Aalen Estimator function
+\[
+    \widehat {S^{\text{NA}}}(s) = \widehat {S^{\text{NA}}}(t_{(i)}), i = \mathrm{arg\,max}_j t_{(j)}\leqslant s, \forall s \in \mathbb{R}
+\]
+which is aligned with \eqref{eq:na_sf}.
+
+\section{Backtest}
+To validate the estimations, various backtesting strategies are employed. The models' predictions are tested against different market conditions and time splits, ensuring the robustness and adaptability of the estimations. Performance metrics such as hit rate and concordance index are utilized to evaluate the accuracy of the models' predictions.
+
+\subsection{Harrell Concordance Index (C-Index)}
+\subsubsection{C-Index Definition}
+The Harrell Concordance Index, denoted as C-index, measures the discriminatory power of a predictive model, evaluating its ability to correctly predict the relative order of event times for pairs of individuals in survival analysis. The C-Index is widely utilized in survival analysis and is especially crucial in medical research to assess the accuracy of prognostic models. A higher C-Index indicates better predictive accuracy, with 1.0 indicating a perfect model, and 0.5 indicating random chance.
+
+The C-Index is calculated as follows:
+\[
+C = \frac{\text{Concordant pairs} + 0.5 \times \text{Tied pairs}}{\text{Total pairs}}
+\]
+where concordant pairs have the same predicted event times order as actual event times, tied pairs have one or both event times censored, and total pairs represent all possible pairs in the dataset. Detailed calculation methods are in this table (\ref{tab:concordance-index})
+
+\begin{table}[H]
+    \caption{Concordance Index Calculation for Different Price and Censor Status Relationships}
+    \label{tab:concordance-index}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        \multicolumn{2}{|c|}{\textbf{Price Relationships}} & \multicolumn{4}{c|}{$t_i<t_j$} & \multicolumn{4}{c|}{$t_i=t_j$}\\ \hline
+        \multirow{2}{*}{\textbf{Censor Status}}&$C_i$ & \multicolumn{2}{c|}{0} & \multicolumn{2}{c|}{1} & \multicolumn{2}{c|}{0} & \multicolumn{2}{c|}{1} \\ \cline{2-10}
+        ~&$C_j$ & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 \\ \hline
+        \multirow{3}{*}{\textbf{Prediction Relationships}}&$P_i<P_j$ & - & - & C & C & - & T & C & T \\ \cline{2-10}
+        ~&$P_i=P_j$ & - & - & T & T & - & T & T & C \\ \cline{2-10}
+        ~&$P_i>P_j$ & - & - & $\times$ & $\times$ & - & C & T & T \\ \hline
+    \end{tabular}
+    \vspace{0.5em} % Adjust vertical spacing between table and legend
+    \caption*{Legend: - indicates not permissable pairs, $\times$ means not concordance pairs, T represents tied pairs, and C indicates concordance pairs.}
+\end{table}
+
+\subsubsection{C-Index Algorithm}
+The algorithm of C-Index is presented as follows:
+
+\begin{algorithm}[h]
+    \KwIn{List of predicted RFQs with corresponding censored status and predicted trade fail probability: \[ \{(t_1, c_1, \hat S(t_1), (t_2, c_2, \hat S(t_2), \ldots, (t_n, c_n, \hat S(t_n)\} \]}
+    \KwOut{C-Index of the list}
+    Sort the list by their price in ascending order as \[ \{(t_{(1)}, c_{(1)}, \hat S(t_{(1)})), (t_{(2)}, c_{(2)}, \hat S(t_{(2)})), \ldots, (t_{(n)}, c_{(n)}, \hat S(t_{(n)}))\} \]
+    
+    $p \gets 0$ denotes numbers of permissable pairs\;
+    $c \gets 0$ denotes numbers of concordance pairs\;
+    $t \gets 0$ denotes numbers of tied pairs\;
+    \For{Each pairs $(t_{(i)}, c_{(i)}, \hat S(t_{(i)})), (t_{(j)}, c_{(j)}, \hat S(t_{(j)}))$in the sorted list}{
+        \If{They are permissable pairs} {
+            Update numbers of permissable pairs $p \gets p+1$\;
+        }
+        \If{They are tied pairs} {
+            Update numbers of tied pairs $t \gets p+1$\;
+        }
+        \If{They are concordance pairs} {
+            Update numbers of concordance pairs $c \gets c+1$\;
+        }
+        }
+    \Return{\[
+        C = \frac{c + 0.5*t}{p}
+        \]}
+\caption{Concordance Index Calculation}
+\label{alg:concordance-index}
+\end{algorithm}
+
+
+\subsection{Hit Rate (HR)}
+\subsubsection{Hit Rate Definition}
+Hit Rate assesses the proportion of executed RFQ among all RFQs in the dataset, providing a fundamental metric to evaluate the effectiveness of predictive models. Hit Rate is vital for understanding the accuracy of predicting which RFQs will result in successful trades, offering insights into model performance.
+
+Assume an interval $I = [a, b] \in [0, 1]$, the Hit Rate in $I$ is calculated as the number of correct predictions divided by the total number of RFQs whose predicted trade done probability is located in $I$:
+\begin{align}
+    HR_I &= \frac{R_I}{T_I},\label{eq:hr}\\
+    &=\frac{\sum_{i|(1 - \hat S(t_i)) \in I}\mathds{1}(c_i = 1)}{\sum_{i|(1 - \hat S(t_i)) \in I} 1 }.\label{eq:hr_e}
+\end{align}
+Above $R_I$ indicates actual number of executed RFQs in $I$, while $T_I$ means total number of RFQs in $I$. \eqref{eq:hr_e} is substituted by the above estimator from \eqref{eq:hr}.
+
+\subsection{Hit Rate Gap (HRG)}
+The Hit Rate Gap measures the error between Hit Rates and theoretical value in the interval. It is calculated by subtracting the real Hit Rate and the medium vaule of the interval. Assume an interval $I = [a, b] \subset  [0, 1]$, the Hit Rate Gap in $I$ is represented as:
+\begin{align}
+    HRG_I& = HR_I - \frac{b-a}{2},\label{eq:hrg}\\
+    &=\frac{\sum_{i|(1 - \hat S(t_i)) \in I}\mathds{1}(c_i = 1)}{\sum_{i|(1 - \hat S(t_i)) \in I} 1 } - \frac{b-a}{2}.\label{eq:hrg_e}
+\end{align}
+
+\subsection{Absolute Maximum Hit Rate Gap (AMG)}
+The Absolute Maximum Hit Rate Gap (\(HRG_{\text{max}}\)) represents the highest observed difference in Hit Rate Gaps among multiple intervals. It provides an indicator of the maximum error in predictive accuracy and stability. The Absolute Maximum Hit Rate Gap is calculated as:
+\begin{align}
+    AMG_I &= \max_{i \in \Lambda} HR_{I_i}\label{eq:amg}\\
+    &=\max_{i \in \Lambda}\left( \frac{\sum_{j|(1 - \hat S(t_j)) \in I_i}\mathds{1}(c_j = 1)}{\sum_{j|(1 - \hat S(t_j)) \in I_i} 1 } - \frac{b_i-a_i}{2}\right).\label{eq:amg_e}
+\end{align}
+
+where $ I_i = [a_i, b_i] \subset [0, 1], HR_{I_i}$ represent the Hit Rate Gaps between different intervals.
+
+In my study, the entire probability space was discretized into ten equal intervals denoted as $I_i = [(i-1)*0.1, i*0.1]$. Performance indicators were evaluated within these intervals to assess the model's effectiveness.
+
+\section{Hypothesis Test: Comparing Means of AMG of KM and AMG of NA}
+In this section, we perform a hypothesis test to compare the means of two groups: `AMG of KM' and `AMG of NA'. The objective is to assess if there is a significant difference in the Absolute Maximum Hit Rate Gap (AMG) between the Kaplan-Meier (KM) and Nelson-Aalen (NA) estimators.
+
+\subsection{Hypotheses}
+\subsubsection{Overall Comparison}
+Let $\mu^{\text{KM}}$ and $\mu^{\text{NA}}$ represent the mean AMG for KM and NA estimators in fold $i$, i.e. $\{AMG^{\text{KM}}_i\}$, $\{AMG^{\text{NA}}_i\}, i = 0, \cdots, 14$, respectively:
+\begin{align*}
+    \mu^{\text{KM}}&= \frac{1}{15}\sum_{i=1}^{15} AMG^{\text{KM}}_i, \\
+    \mu^{\text{NA}}&= \frac{1}{15}\sum_{i=1}^{15} AMG^{\text{NA}}_i.
+\end{align*}
+
+Null Hypothesis ($H_0$): There is no significant difference in the mean AMG between KM and NA estimators.\\
+Alternative Hypothesis ($H_1$): There is a significant difference in the mean AMG between KM and NA estimators.
+
+\subsubsection{Sector-Specific Comparison}
+Let $\mu^{\text{KM}}_i$ and $\mu^{\text{NA}}_i$ represent the mean AMG for KM and NA estimators within sector $j$ in fold $i$, i.e. $\{AMG^{\text{KM}}_{i, j}\}, \{AMG^{\text{NA}}_{i, j}\}, i = 0, \cdots, 14, j = 1, \cdots, 11$, respectively:
+\begin{align*}
+    \mu^{\text{KM}}_i&= \frac{1}{15}\sum_{j=1}^{15} AMG^{\text{KM}}_{i, j}, \\
+    \mu^{\text{NA}}_i&= \frac{1}{15}\sum_{j=1}^{15} AMG^{\text{NA}}_{i, j}.
+\end{align*}
+Null Hypothesis ($H_{0, i}$): There is no significant difference in the mean AMG between KM and NA estimators within each sector.\\
+Alternative Hypothesis ($H_{1, i}$): There is a significant difference in the mean AMG between KM and NA estimators within at least one sector.
+
+\subsection{Hypothesis Test: Two-Sample t-test}
+We will perform a two-sample t-test to compare the means of `AMG of KM' and `AMG of NA'. The t-test will determine if the observed difference in means is statistically significant. Here is the formula for the paired data two-sample t-test:
+\[
+    t = \frac{\mu^{\text{KM}}_i - \mu^{\text{NA}}_i}{\sqrt{\left(\frac{s^2}{n}\right) + \left(\frac{s^2}{n}\right)}}
+\]
+The degree of freedom is all 15 - 1 = 14. We will use a significance level of $\alpha = 0.05$ for this test.
